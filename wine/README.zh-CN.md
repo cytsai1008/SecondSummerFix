@@ -14,8 +14,7 @@ Wine 必须在 CoreAudio 之上模拟一整套 Windows 音频栈。它的现代�
 
 ## 修复
 
-Ren'Py 启动时、引擎初始化之前，会读取游戏可执行文件旁边的 `environment.txt`。
-把这两行放进去：
+Ren'Py 启动时、引擎初始化之前，会读取游戏可执行文件旁边的 `environment.txt`。把这两行放进去：
 
 ```
 SDL_AUDIODRIVER = "winmm"
@@ -38,8 +37,7 @@ CSE-1.0-pc/environment.txt
 
 ## 无效的尝试
 
-- 在"音频 MIDI 设置"里更换输出设备或采样率（44.1 / 48 / 96 kHz）。问题在 Wine，
-  不在设备。
+- 在"音频 MIDI 设置"里更换输出设备或采样率（44.1 / 48 / 96 kHz）。问题在 Wine，不在设备。
 - 在 CrossOver 瓶子配置里设音频选项。这些设置需要完整 **退出瓶子（Quit Bottle）** 才生效，所以有几次测试其实压根没真正应用过。`environment.txt` 完全避开了这个坑 —— 这也是优先用它的原因。
 
 如果 `winmm` 在别的环境上失效，下一个可试的是同一个文件里改成 `directsound` 或 `dsound` —— 每次测试只改一行、重启一次游戏。

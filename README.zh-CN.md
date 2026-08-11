@@ -2,9 +2,7 @@
 
 [English](README.md) · **简体中文**
 
-《A Second Chance to Relive Summer》（Ren'Py 引擎，Steam app **4309030**）的修复集合：
-1.0 → 2.1.0 更新后存档打不开、Steam 云同步同步错了文件夹、Steam 成就永远不解锁，
-以及在 CrossOver / Wine 下音频失真。
+《A Second Chance to Relive Summer》（Ren'Py 引擎，Steam app **4309030**）的修复集合：1.0 → 2.1.0 更新后存档打不开、Steam 云同步同步错了文件夹、Steam 成就永远不解锁，以及在 CrossOver / Wine 下音频失真。
 
 四个问题互相独立，按症状取用即可。
 
@@ -20,11 +18,9 @@
 
 ## 安装位置
 
-快速下载（只含 `tools/`，不用克隆仓库）：
-[tools.zip](https://github.com/cytsai1008/SecondSummerFix/releases/download/v1.0/tools.zip)
+快速下载（只含 `tools/`，不用克隆仓库）：[tools.zip](https://github.com/cytsai1008/SecondSummerFix/releases/download/v1.0/tools.zip)
 
-把 `tools/` 整个复制到游戏安装根目录 —— 也就是同时含有 `CSE-1.0-pc\` 和
-`CSE-2.1.0-pc\` 的那一层：
+把 `tools/` 整个复制到游戏安装根目录 —— 也就是同时含有 `CSE-1.0-pc\` 和 `CSE-2.1.0-pc\` 的那一层：
 
 ```
 ...\steamapps\common\CSE-1.0-pc\
@@ -33,11 +29,9 @@
     tools\            <- 放这里
 ```
 
-`savefix.py` 靠扫描自己所在目录的上一层来定位游戏安装，放在别处运行会直接报
-`no installed game found under <path>` 退出。
+`savefix.py` 靠扫描自己所在目录的上一层来定位游戏安装，放在别处运行会直接报 `no installed game found under <path>` 退出。
 
-`wine/environment.txt` 是例外：它要放在每个 `.exe` 旁边，见
-[wine/README.zh-CN.md](wine/README.zh-CN.md)。
+`wine/environment.txt` 是例外：它要放在每个 `.exe` 旁边，见 [wine/README.zh-CN.md](wine/README.zh-CN.md)。
 
 ## 文件清单
 
@@ -50,17 +44,12 @@
 | `docs/achievements.zh-CN.md` | 成就为什么是死的，以及 DLL 必须来自哪个 SDK 版本。 |
 | `wine/README.zh-CN.md` | Wine 音频问题，以及解决它的两个设置。 |
 
-`wine/` 下的内容只适用于用 Wine 或 CrossOver 跑 Windows 版；在 Windows 上直接忽略
-该目录。其余部分各平台通用 —— 只是 `tools/make-junction.sh` 是
-`make-junction.cmd` 在 Linux/macOS + Wine 下的对应版本，因为是同一个修复，所以放在
-一起。
+`wine/` 下的内容只适用于用 Wine 或 CrossOver 跑 Windows 版；在 Windows 上直接忽略该目录。其余部分各平台通用 —— 只是 `tools/make-junction.sh` 是 `make-junction.cmd` 在 Linux/macOS + Wine 下的对应版本，因为是同一个修复，所以放在一起。
 
-除路径外，这里的东西都不绑定具体版本：`savefix.py` 不写死任何版本号或偏移量，音频
-修复对任何 Wine 下的 Ren'Py 游戏都有效。
+除路径外，这里的东西都不绑定具体版本：`savefix.py` 不写死任何版本号或偏移量，音频修复对任何 Wine 下的 Ren'Py 游戏都有效。
 
 ## 安全性
 
 - 不带参数的 `savefix` 是只读的。任何写入前都会自动备份。
-- 存档和 `.rpyc` 都是 pickle 文件；工具从不把它们交给标准 unpickler，所以里面的
-  内容无法执行。
+- 存档和 `.rpyc` 都是 pickle 文件；工具从不把它们交给标准 unpickler，所以里面的内容无法执行。
 - `steam_api64.dll` 只从官方 SDK 取，绝不要从破解版游戏里拿。
