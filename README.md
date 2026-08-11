@@ -20,6 +20,9 @@ Each fix is independent. Take the one matching your symptom.
 
 ## Install
 
+Quick download (just `tools/`, no repo clone):
+[tools.zip](https://github.com/cytsai1008/SecondSummerFix/releases/download/v1.0/tools.zip)
+
 Copy `tools/` into the game's install root — the folder holding `CSE-1.0-pc\`
 and `CSE-2.1.0-pc\` — so it sits one level above them:
 

@@ -20,6 +20,9 @@
 
 ## 安装位置
 
+快速下载（只含 `tools/`，不用克隆仓库）：
+[tools.zip](https://github.com/cytsai1008/SecondSummerFix/releases/download/v1.0/tools.zip)
+
 把 `tools/` 整个复制到游戏安装根目录 —— 也就是同时含有 `CSE-1.0-pc\` 和
 `CSE-2.1.0-pc\` 的那一层：
 
