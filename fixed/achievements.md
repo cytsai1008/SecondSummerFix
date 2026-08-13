@@ -2,6 +2,14 @@
 
 **English** · [简体中文](achievements.zh-CN.md)
 
+> **Fixed by the small update of 2026-08-13.** The build now ships
+> `lib/py3-windows-x86_64/steam_api64.dll` (and `libsteam_api.so` for Linux) —
+> the two files that update adds. Nothing below has to be done by hand any more;
+> it applies only to builds before that update. See [README.md](README.md).
+>
+> Already earned achievements? The [backfill section](#backfilling-the-achievements-you-already-earned)
+> at the end still applies — they do not appear on Steam by themselves.
+
 ## Symptom
 
 You play through achievement points, nothing pops on Steam, and `log.txt` shows no error. The game itself thinks it worked — `game/saves/persistent` contains:

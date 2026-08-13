@@ -1,4 +1,4 @@
-# Save repair, save locations and the Steam Cloud junction
+# Save repair, save locations and Steam Cloud
 
 **English** · [简体中文](saves.zh-CN.md)
 
@@ -65,6 +65,10 @@ It is not corruption. Your story variables, flags and progress are all intact �
 - Overlap: **zero**. The developer recompiled from scratch, so every identifier in every 1.0 save was dead. Nothing partial about it.
 - Serials shifted too, but only slightly, and by differing amounts per region (−9, 0, +3 at different points in `script_chapter_2.rpy`) — the signature of statements being inserted and removed, not renumbered wholesale.
 
+### The 2026-08-13 update did *not* do this
+
+That update recompiled the scripts again (`scripts.rpa` and the bytecode caches changed), but the identifiers survived: 2.1.0 saves still load, and the ones already repaired stay repaired. A recompile only breaks saves when the developer rebuilds from scratch, which is what happened at 1.0 → 2.1.0 and did not happen here. Run `savefix` after any update anyway — it is read-only and tells you in one screen.
+
 ---
 
 ## How the repair works
@@ -91,19 +95,22 @@ Save files and `.rpyc` files are pickles, and pickles can execute code. They are
 
 ## Save locations
 
-Ren'Py keeps saves in more than one place, and Steam Cloud may sync a different one than the game reads:
+Ren'Py keeps saves in more than one place, and the one Steam Cloud syncs is not the one the game reads:
 
 | Location | Role |
 |---|---|
 | `%APPDATA%\RenPy\SCR-1758907360\` | **Live.** What the game actually reads and writes. |
-| `CSE-2.1.0-pc\game\saves\` | Mirror, current install. The game writes here too. |
-| `CSE-1.0-pc\game\saves\` | **Junction** to the folder above. Steam Cloud syncs this. |
+| `CSE-2.1.0-pc\game\saves\` | Mirror, current install. The game writes here too, and **Steam Cloud syncs this**. |
+| `CSE-1.0-pc\game\saves\` | Old install. Dead — nothing reads or syncs it any more. |
 | `%APPDATA%\RenPy\SCR-1758907360\sync\` | Ren'Py Sync staging. Not scanned on load. |
 
-> The junction was created on 2026-08-10, so the last two rows are one folder under
-> two names. `savefix` detects this (via `realpath`) and lists it once.
+> Until the small update of **2026-08-13**, Steam Cloud synced the `CSE-1.0-pc` folder
+> instead — a folder the 2.1.0 build neither reads nor writes. That is fixed; the
+> junction workaround it needed now lives in [../fixed/README.md](../fixed/README.md).
+> If you made that junction, the last two rows are one folder under two names, which
+> `savefix` detects (via `realpath`) and lists once.
 
-The old-install folder is a trap: CSE 2.1.0 never reads it, so repairing your saves does nothing for what Steam Cloud holds. `savefix sync` pushes the live saves to all of them, which is what makes the cloud copy worth having.
+`savefix sync` pushes the live saves to all locations, which is what makes the cloud copy worth having.
 
 `savefix` finds these itself — including old installs with no scripts left — so this table is background, not something you need to act on.
 
@@ -112,10 +119,10 @@ The old-install folder is a trap: CSE 2.1.0 never reads it, so repairing your sa
 App ID **4309030**, cloud root `GameInstall`, and exactly one folder:
 
 ```
-<Steam>\steamapps\common\CSE-1.0-pc\CSE-1.0-pc\game\saves\
+<Steam>\steamapps\common\CSE-1.0-pc\CSE-2.1.0-pc\game\saves\
 ```
 
-That's 11 save slots plus `persistent`. The path is hardcoded to the **old** install and was never updated for the 2.1.0 layout, so Steam is syncing a folder the current build neither reads nor writes.
+That's the save slots plus `persistent`.
 
 You can confirm this yourself — Steam records every file it tracks in:
 
@@ -123,56 +130,35 @@ You can confirm this yourself — Steam records every file it tracks in:
 <Steam>\userdata\<accountid>\4309030\remotecache.vdf
 ```
 
-Steam also drops a `steam_autocloud.vdf` marker in the folder it syncs, which is how `savefix pull` identifies it.
+Every entry there should start with `CSE-2.1.0-pc/game/saves/`. If yours still say `CSE-1.0-pc/`, you are on a build older than 2026-08-13. Steam also drops a `steam_autocloud.vdf` marker in the folder it syncs, which is how `savefix` tags it in its report.
 
 ---
 
 ## Playing on two machines
 
-Because Steam syncs a folder the game doesn't read, the chain is broken in the middle and needs a copy step at each end:
+Steam now syncs the mirror, but the game's source of truth is still `%APPDATA%`, so the two ends need a copy step:
 
 ```
-   live savedir  %APPDATA%\RenPy\SCR-...     <- the game reads/writes here
-        ^  |                                     (nothing connects these)
+   live savedir  %APPDATA%\RenPy\SCR-...        <- the game reads/writes here
+        ^  |                                        (savefix sync connects these)
         |  v
-   Steam cloud   CSE-1.0-pc\game\saves       <- Steam reads/writes here
+   Steam cloud   CSE-2.1.0-pc\game\saves        <- Steam reads/writes here
 ```
 
-### The manual way
+On the machine you just played, run `savefix sync`, then quit Steam so it uploads. On the other machine, after Steam has downloaded, copy the files from `CSE-2.1.0-pc\game\saves\` into `%APPDATA%\RenPy\SCR-1758907360\` and play.
 
-On the machine you just played, run `savefix sync`, then quit Steam so it uploads. On the other machine, after Steam has downloaded, copy the files from `CSE-1.0-pc\game\saves\` into `%APPDATA%\RenPy\SCR-1758907360\` and play.
+The outbound half goes stale the moment you play again, so make `savefix sync` the last thing you do before quitting.
 
-That works, but the outbound half goes stale the moment you play again, so it is easy to forget.
-
-### The junction (better)
-
-Ren'Py genuinely reads and writes `CSE-2.1.0-pc\game\saves` — the game keeps it current by itself. So making Steam's folder a junction to it removes both manual steps:
-
-```
-mklink /J "<...>\CSE-1.0-pc\CSE-1.0-pc\game\saves" "<...>\CSE-1.0-pc\CSE-2.1.0-pc\game\saves"
-```
-
-`tools/make-junction.cmd` (Windows) and `tools/make-junction.sh` (Linux/macOS + Wine) do this for you, including finding the install, backing up the folder they replace, and `--dry-run` / `--undo`. On Linux and macOS they make a plain symlink rather than a junction: a junction is an NTFS reparse point, the filesystem under a Wine prefix isn't NTFS, and Wine presents a symlinked directory to Windows programs — Steam included — as an ordinary directory. Same result, correct mechanism.
-
-> Both scripts hardcode the folder names `CSE-1.0-pc` (Steam's) and
-> `CSE-2.1.0-pc` (the game's). After the next update, edit the two variables at
-> the top — `OLD_REL`/`NEW_REL` in the `.sh`, `OLD`/`NEW` in the `.cmd` — to the
-> new folder name. `savefix.py` needs no such edit; it globs for whatever install
-> is there.
-
-Outbound, Steam always sees current saves with no `sync` needed. Inbound, Steam's download lands in a folder the game already reads, so the saves simply appear.
-
-Do it with **Steam and the game both closed**, take a backup first, and make sure the folder holds current saves before linking — link while it holds older ones and Steam's first sync may push those stale files back at you.
-
-A junction is the right tool here (`mklink /J`, no admin required). What matters is that it points at the *mirror*, not at `%APPDATA%`. Linking Steam to `%APPDATA%` would wire your source of truth into Steam's conflict resolution, so a bad download — or an uninstall deleting through the link — would take your real saves. Pointing at the mirror keeps `%APPDATA%` entirely out of Steam's reach, so the worst case is a replaceable copy and a `savefix sync` to put it right.
+> Before 2026-08-13 the cloud folder was the *old* install's, which the game never
+> touches at all — the junction in [../fixed/](../fixed/README.md) existed to bridge
+> that gap. It is no longer needed, and harmless if you already made it.
 
 ### Notes
 
 - The first load on the other machine shows Ren'Py's **"unknown token"** prompt, because saves are signed with the originating machine's key. Accept it, and accept the offer to trust the key, and it won't ask again.
 - `persistent` is synced too, so unlocks and gallery progress travel with you.
 - If the two machines are on different game versions, the saves will show as `BROKEN`. Run `savefix fix`. That's expected, not a failure.
-- With the junction in place, the crash dumps in the mirror (`_tracesave-*.save`, a few hundred KB) get uploaded too. Harmless, and safe to delete.
-- **Under CrossOver, a junction made by `mklink /J` looks like an empty directory from macOS** — Wine stores the reparse point in a `user.WINEREPARSE` extended attribute (`xattr -l <dir>` shows it). It resolves correctly for the game and for Steam inside the bottle. Run natively on macOS, `savefix` cannot follow it, so it simply does not list the `CSE-1.0-pc\game\saves` path at all — it reports the real folder, correctly tagged `<- Steam Cloud syncs this` from the `steam_autocloud.vdf` marker that lands there through the link.
+- Crash dumps in the mirror (`_tracesave-*.save`, a few hundred KB) get uploaded too. Harmless, and safe to delete.
 
 ### General save notes
 
@@ -204,6 +190,5 @@ Everything is reversible. Backups are plain folders of plain files: open the mos
 |---|---|
 | `savefix.cmd` | **Run this.** Handles the `ecdsa` dependency. |
 | `savefix.py` | All the logic. Self-contained, no other imports. |
-| `make-junction.cmd` / `.sh` | Create (or `--undo`) the Steam Cloud junction. |
 
 `savefix.py` hardcodes no paths, no version numbers and no offsets, so it should handle the next update as well as it handled this one.

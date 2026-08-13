@@ -2,6 +2,13 @@
 
 [English](achievements.md) · **简体中文**
 
+> **2026 年 8 月 13 日的小型更新已修复。** 游戏包里现在自带
+> `lib/py3-windows-x86_64/steam_api64.dll`（Linux 则是 `libsteam_api.so`）——
+> 这次更新新增的正好就是这两个文件。下面的手动步骤不用再做了，只适用于该更新之前的版本。
+> 见 [README.zh-CN.md](README.zh-CN.md)。
+>
+> 已经拿到过的成就怎么办？文末的[补发一节](#补发已经拿到的成就)仍然有效 —— 它们不会自己出现在 Steam 上。
+
 ## 症状
 
 你一路玩过多个成就触发点，Steam 上什么都没弹，而且 `log.txt` 里没有任何报错。游戏本身认为它成功了 —— `game/saves/persistent` 里已经有：
